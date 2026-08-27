@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / editor / AI tools
+.idea/
+.vscode/
+.cursor/
+.devin/
+.windsurf/
+.agents/
+.claude/
+skills-lock.json

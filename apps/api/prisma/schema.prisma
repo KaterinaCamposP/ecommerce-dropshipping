@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Prisma 7: la URL de conexión vive en prisma7.config.ts (datasource.url)
+}
+
+enum Role {
+  CLIENTE
+  ADMIN
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String?
+  googleId     String?       @unique
+  name         String
+  role         Role          @default(CLIENTE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  refreshTokens RefreshToken[]
+  // orders       Order[]     // Sprint 2
+  // cart         Cart?       // Sprint 2
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Product {
+  id             String   @id @default(cuid())
+  dropiProductId String?  @unique
+  title          String
+  description    String?
+  price          Decimal
+  stock          Int
+  imageUrl       String?
+  category       String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // cartItems      CartItem[]  // Sprint 2
+  // orderItems     OrderItem[] // Sprint 2
+}
