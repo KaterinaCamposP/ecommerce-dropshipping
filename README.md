@@ -435,7 +435,7 @@ erDiagram
 
     CART {
         string id PK "cuid()"
-        string userId FK_UK "unique per user"
+        string userId FK "unique per user (1:1)"
         datetime updatedAt
     }
 
@@ -467,7 +467,7 @@ erDiagram
 
     PAYMENT {
         string id PK "cuid()"
-        string orderId FK_UK "unique per order"
+        string orderId FK "unique per order (1:1)"
         string provider "enum: WEBPAY, MERCADOPAGO"
         string providerRef
         string status
