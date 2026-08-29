@@ -379,6 +379,56 @@ Cambiar el puerto del contenedor Docker si se necesita mantener PostgreSQL nativ
 
 ---
 
+## 🔧 Desviaciones Técnicas de Prisma 7
+
+Durante la implementación del módulo de autenticación se presentaron ajustes específicos de Prisma 7:
+
+### Driver Adapter obligatorio
+
+Prisma 7 eliminó el motor de conexión interno (Rust query engine). Ahora el cliente **requiere un driver adapter** para conectarse a la base de datos en runtime.
+
+**Solución aplicada:**
+
+```typescript
+// apps/api/src/prisma/prisma.service.ts
+import { PrismaPg } from "@prisma/adapter-pg";
+
+@Injectable()
+export class PrismaService extends PrismaClient {
+  constructor(configService: ConfigService) {
+    const connectionString = configService.get<string>("DATABASE_URL");
+    super({ adapter: new PrismaPg({ connectionString }) });
+  }
+}
+```
+
+**Dependencias instaladas:**
+
+```bash
+pnpm add @prisma/adapter-pg pg
+pnpm add -D @types/pg
+```
+
+**Nota:** `prisma migrate dev` funciona sin adapter porque el CLI se conecta directamente usando `prisma7.config.ts`. El adapter solo es necesario en runtime (NestJS).
+
+### Conflicto con PostgreSQL nativo de Windows
+
+Si tienes PostgreSQL instalado nativamente en Windows, el servicio `postgresql-x64-16` puede ocupar el puerto 5432 y causar el error `P1000 / 28P01: password authentication failed`.
+
+**Solución permanente:**
+
+```powershell
+# Detener el servicio
+Stop-Service -Name "postgresql-x64-16" -Force
+
+# Configurar inicio manual (no arranca con Windows)
+Set-Service -Name "postgresql-x64-16" -StartupType Manual
+```
+
+Con esto, Docker puede usar el puerto 5432 sin conflictos.
+
+---
+
 ## 📊 Modelo de Datos
 
 ### Sprint 1
