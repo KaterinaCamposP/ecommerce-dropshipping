@@ -543,7 +543,7 @@ erDiagram
 ## 📅 Estado del Sprint 1
 
 - [x] `BE-01`: Setup NestJS, Prisma, PostgreSQL y Docker.
-- [ ] `BE-02`: Módulo Auth con JWT Access/Refresh, Local bcrypt y Google OAuth.
+- [x] `BE-02`: Módulo Auth con JWT Access/Refresh, Local bcrypt y Google OAuth.
 - [ ] `QA-01`: Setup Jest y Supertest, tests unitarios para Auth y Guards.
 - [ ] `BE-03`: Módulo Catalog con CRUD de productos, paginación, filtros y roles.
 - [ ] `FE-01`: Setup Next.js 15, layouts globales y Login/Registro.

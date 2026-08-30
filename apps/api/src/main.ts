@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -24,7 +25,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('E-commerce Dropshipping API')
     .setDescription(
-      'API del proyecto Semi-Senior: auth, catálogo, carrito, checkout, pagos y dropshipping.',
+      'API del proyecto: auth, catálogo, carrito, checkout, pagos y dropshipping.',
     )
     .setVersion('1.0')
     .addBearerAuth()

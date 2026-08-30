@@ -5,9 +5,15 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { TokensService } from './tokens.service';
+
+const googleProviders =
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? [GoogleStrategy]
+    : [];
 
 @Module({
   imports: [
@@ -32,7 +38,13 @@ import { TokensService } from './tokens.service';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokensService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    TokensService,
+    LocalStrategy,
+    JwtStrategy,
+    ...googleProviders,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

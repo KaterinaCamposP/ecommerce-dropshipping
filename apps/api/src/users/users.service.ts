@@ -10,6 +10,10 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
+  async findByGoogleId(googleId: string) {
+    return this.prisma.user.findUnique({ where: { googleId } });
+  }
+
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -34,6 +38,23 @@ export class UsersService {
         email: data.email,
         passwordHash: data.passwordHash,
       },
+    });
+  }
+
+  async createWithGoogle(data: {
+    name: string;
+    email: string;
+    googleId: string;
+  }) {
+    return this.prisma.user.create({
+      data: { name: data.name, email: data.email, googleId: data.googleId },
+    });
+  }
+
+  async linkGoogleId(userId: string, googleId: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { googleId },
     });
   }
 }

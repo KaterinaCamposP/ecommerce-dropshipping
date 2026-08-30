@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @ApiTags('auth')
@@ -36,5 +37,21 @@ export class AuthController {
   @ApiOperation({ summary: 'Rotación de refresh token' })
   refresh(@Body() dto: RefreshDto) {
     return this.authService.refresh(dto.refreshToken);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Inicia sesión con Google (redirige a Google)' })
+  google() {
+    // El flujo lo inicia el guard de Passport
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({
+    summary: 'Callback de Google: crea o vincula cuenta y devuelve tokens',
+  })
+  googleCallback(@CurrentUser() user: AuthUser) {
+    return this.authService.login(user);
   }
 }

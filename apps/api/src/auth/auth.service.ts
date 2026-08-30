@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import type { Profile } from 'passport-google-oauth20';
 import { AuthUser } from '../common/interfaces/request-user.interface';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
@@ -45,6 +46,37 @@ export class AuthService {
     }
 
     return user as AuthUser;
+  }
+
+  async findOrCreateGoogleUser(profile: Profile): Promise<AuthUser> {
+    const googleId = profile.id;
+    const email = profile.emails?.[0]?.value;
+    const name = profile.displayName || 'Google User';
+
+    if (!email) {
+      throw new UnauthorizedException('Google profile has no email');
+    }
+
+    // 1) Si ya existe cuenta vinculada a ese googleId, la usa
+    const byGoogleId = await this.usersService.findByGoogleId(googleId);
+    if (byGoogleId) {
+      return byGoogleId as AuthUser;
+    }
+
+    // 2) Si existe cuenta local con ese email, la vincula
+    const byEmail = await this.usersService.findByEmail(email);
+    if (byEmail) {
+      const linked = await this.usersService.linkGoogleId(byEmail.id, googleId);
+      return linked as AuthUser;
+    }
+
+    // 3) Si no existe, crea cuenta nueva sin contraseña
+    const created = await this.usersService.createWithGoogle({
+      name,
+      email,
+      googleId,
+    });
+    return created as AuthUser;
   }
 
   async login(user: AuthUser) {
