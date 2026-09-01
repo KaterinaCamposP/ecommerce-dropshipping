@@ -136,7 +136,24 @@ Esto crea y aplica la migración inicial con los modelos del Sprint 1:
 
 ---
 
-### 5. Levantar el backend
+### 5. Poblar datos iniciales (seed)
+
+Desde `apps/api`:
+
+```bash
+pnpm prisma db seed
+```
+
+Esto crea:
+
+- Un usuario admin con las credenciales definidas en `.env` (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`).
+- 6 productos de ejemplo (5 activos + 1 inactivo para probar visibilidad por rol).
+
+El seed es **idempotente**: puedes ejecutarlo las veces que quieras sin duplicar datos (usa `upsert` para el admin y verifica el conteo de productos antes de insertar).
+
+---
+
+### 6. Levantar el backend
 
 Desde `apps/api`:
 
@@ -545,7 +562,7 @@ erDiagram
 - [x] `BE-01`: Setup NestJS, Prisma, PostgreSQL y Docker.
 - [x] `BE-02`: Módulo Auth con JWT Access/Refresh, Local bcrypt y Google OAuth.
 - [x] `QA-01`: Setup Jest y Supertest, tests unitarios para Auth y Guards.
-- [ ] `BE-03`: Módulo Catalog con CRUD de productos, paginación, filtros y roles.
+- [x] `BE-03`: Módulo Catalog con CRUD de productos, paginación, filtros y roles.
 - [ ] `FE-01`: Setup Next.js 15, layouts globales y Login/Registro.
 - [ ] `UX-01`: Wireframes básicos.
 

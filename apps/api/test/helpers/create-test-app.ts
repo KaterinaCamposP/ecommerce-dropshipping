@@ -1,12 +1,13 @@
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { PrismaModule } from '../../src/prisma/prisma.module';
-import { mockPrismaService } from './mock-prisma';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from '../../src/auth/auth.module';
+import { PrismaModule } from '../../src/prisma/prisma.module';
+import { PrismaService } from '../../src/prisma/prisma.service';
+import { ProductsModule } from '../../src/products/products.module';
 import { UsersModule } from '../../src/users/users.module';
+import { mockPrismaService } from './mock-prisma';
 
 export async function createTestApp(): Promise<{
   app: INestApplication;
@@ -30,10 +31,13 @@ export async function createTestApp(): Promise<{
       PrismaModule,
       AuthModule,
       UsersModule,
+      ProductsModule,
     ],
   })
     .overrideProvider(PrismaService)
     .useValue(mockPrismaService)
+    .overrideGuard(ThrottlerGuard)
+    .useValue({ canActivate: () => true })
     .compile();
 
   const app = module.createNestApplication({ logger: false });
