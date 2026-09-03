@@ -564,7 +564,7 @@ erDiagram
 - [x] `QA-01`: Setup Jest y Supertest, tests unitarios para Auth y Guards.
 - [x] `BE-03`: Módulo Catalog con CRUD de productos, paginación, filtros y roles.
 - [x] `UX-01`: Wireframes básicos.
-- [ ] `FE-01`: Setup Next.js 15, layouts globales y Login/Registro.
+- [x] `FE-01`: Setup Next.js 15, layouts globales y Login/Registro.
 
 ---
 
