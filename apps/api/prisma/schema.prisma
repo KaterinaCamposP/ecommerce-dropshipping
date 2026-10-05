@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Prisma 7: la URL de conexión vive en prisma7.config.ts (datasource.url)
 }
 
 enum Role {
@@ -13,18 +12,17 @@ enum Role {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
+  id           String         @id @default(cuid())
+  email        String         @unique
   passwordHash String?
-  googleId     String?       @unique
+  googleId     String?        @unique
   name         String
-  role         Role          @default(CLIENTE)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  role         Role           @default(CLIENTE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   
   refreshTokens RefreshToken[]
-  // orders       Order[]     // Sprint 2
-  // cart         Cart?       // Sprint 2
+  cart          Cart?
 }
 
 model RefreshToken {
@@ -41,18 +39,45 @@ model RefreshToken {
 }
 
 model Product {
-  id             String   @id @default(cuid())
-  dropiProductId String?  @unique
+  id             String     @id @default(cuid())
+  dropiProductId String?    @unique
   title          String
   description    String?
   price          Decimal
   stock          Int
   imageUrl       String?
   category       String?
-  active         Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  active         Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   
-  // cartItems      CartItem[]  // Sprint 2
-  // orderItems     OrderItem[] // Sprint 2
+  cartItems      CartItem[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  sessionId String?    @unique
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
 }
