@@ -290,6 +290,64 @@ La documentación completa y hardening de API se trabajarán formalmente en `BE-
 
 ---
 
+## 🛒 Decisiones de Arquitectura - Carrito (Sprint 2)
+
+### 1. Modelo de datos para invitados
+
+El schema Prisma permite carritos tanto para usuarios autenticados como para invitados:
+
+- `userId String?` - Opcional, único si está presente
+- `sessionId String?` - Opcional, único si está presente
+- Constraint: Uno de los dos campos debe estar presente (validación en servicio)
+
+Esto permite:
+
+- Invitados pueden tener carrito persistente por sesión
+- Usuarios autenticados tienen carrito vinculado a su cuenta
+- Posibilidad de merge al hacer login
+
+### 2. Identificación de sesión para invitados
+
+El frontend genera un UUID al cargar la app (o lo lee de `localStorage`) y lo envía en el header custom `X-Session-Id`.
+
+El backend extrae este header mediante un decorator/guard personalizado (`@CurrentSession()`).
+
+### 3. Merge de carritos al hacer login
+
+Cuando un invitado (con carrito de sesión) se loguea:
+
+- Si el usuario ya tiene un carrito guardado en DB:
+  - Se fusionan ambos carritos
+  - Si hay productos repetidos, se suman las cantidades (respetando stock máximo)
+  - Se elimina el carrito de sesión
+- Si el usuario no tiene carrito:
+  - Se reasigna el carrito de sesión al usuario (cambia `sessionId` por `userId`)
+
+### 4. Validación vs Reserva de stock
+
+**Solo se valida stock** al agregar/actualizar items del carrito:
+
+- `product.stock >= cartItem.quantity + newQuantity`
+- El stock real se descuenta recién en el Checkout (BE-05)
+
+Esto evita:
+
+- Complejidad de jobs cron para liberar carritos abandonados
+- Stock bloqueado innecesariamente
+- Race conditions en MVP
+
+### 5. Testing integrado en BE-04
+
+Los tests unitarios del `CartService` y tests de integración del `CartController` se implementan dentro de los lotes de BE-04, no se postergan para QA-02.
+
+Esto asegura:
+
+- Calidad desde el inicio
+- Detección temprana de bugs
+- Documentación viva del comportamiento esperado
+
+---
+
 ## ⚠️ Desviaciones Técnicas de Setup
 
 Durante la configuración inicial del proyecto se presentaron los siguientes ajustes:
@@ -502,7 +560,9 @@ erDiagram
 
     CART {
         string id PK "cuid()"
-        string userId FK "unique per user (1:1)"
+        string userId FK "nullable, unique if present"
+        string sessionId "nullable, unique if present"
+        datetime createdAt
         datetime updatedAt
     }
 
@@ -511,6 +571,8 @@ erDiagram
         string cartId FK
         string productId FK
         int quantity
+        datetime createdAt
+        datetime updatedAt
     }
 
     ORDER {
@@ -543,7 +605,7 @@ erDiagram
     }
 
     USER ||--o{ REFRESH_TOKEN : "has"
-    USER ||--o| CART : "has"
+    USER ||--o| CART : "has (optional, 1:1)"
     USER ||--o{ ORDER : "places"
 
     CART ||--o{ CART_ITEM : "contains"
